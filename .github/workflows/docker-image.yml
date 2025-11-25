@@ -1,7 +1,7 @@
 name: Build and push Docker image
 
 # Build a Docker image from the project using the provided Dockerfile.dockerfile,
-# and push it to Docker Hub.
+# and push it to GitHub Container Registry (ghcr.io).
 # Triggers: push to master, or manual.
 
 on:
@@ -43,12 +43,12 @@ jobs:
           echo "Found jar: $JAR"
           echo "jar=$JAR" >> $GITHUB_OUTPUT
 
-      - name: Log in to Docker Hub
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
         with:
-          registry: docker.io
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -57,18 +57,17 @@ jobs:
           file: Dockerfile.dockerfile
           push: true
           tags: |
-            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:${{ github.sha }}
-            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:latest
+            ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:latest
           build-args: |
             JAR_FILE=${{ steps.find_jar.outputs.jar }}
 
 # Notes for maintainers:
-# - This workflow pushes to Docker Hub. You must add the following secrets in your
-#   GitHub repository: `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (a personal access token
-#   or your Docker Hub password). Go to Settings -> Secrets -> Actions to add them.
+# - This workflow pushes to GitHub Container Registry (ghcr.io). It uses the built-in
+#   GITHUB_TOKEN to authenticate — no extra repository secrets are required for pushing
+#   to GHCR as long as `packages: write` permission is granted (already set above).
 # - The workflow dynamically finds the jar produced under target/ and passes it to the Docker
 #   build via build-arg JAR_FILE (which matches the ARG in your Dockerfile.dockerfile).
-# - To allow automated pulls from Docker Hub, ensure the Docker Hub repo (username/REPO)
-#   exists or is created automatically when you push (Docker Hub may create it on first push
-#   depending on your account settings). If pushing to an existing organization repo, adjust
-#   the tag to use that organization name instead of secrets.DOCKERHUB_USERNAME.
+# - By default images pushed to GHCR may be private. To allow others to pull, you can make
+#   the package public in GitHub Packages settings or grant read access to specific repositories.
+# - If you prefer image names under a different owner/org, adjust the tag to the desired owner.
