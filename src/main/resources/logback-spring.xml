@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- Define a property for the log file directory -->
+    <!-- This makes it easy to change the log location -->
+    <property name="LOG_FILE_DIR" value="./logs"/>
+    <property name="LOG_FILE_NAME" value="application.log"/>
+
+    <!-- Console Appender: For logging to the console -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!-- Pattern for console output -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Rolling File Appender: For logging to a file with rotation -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- The current log file -->
+        <file>${LOG_FILE_DIR}/${LOG_FILE_NAME}</file>
+
+        <encoder>
+            <!-- Pattern for file output -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+
+        <!-- Rolling policy based on size and time -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- Archived log file name pattern: daily rollover, indexed by size, compressed -->
+            <fileNamePattern>${LOG_FILE_DIR}/archive/${LOG_FILE_NAME}-%d{yyyy-MM-dd}.%i.gz</fileNamePattern>
+            <!-- Each log file will be at most 10MB -->
+            <maxFileSize>10MB</maxFileSize>
+            <!-- Keep 30 days of history -->
+            <maxHistory>30</maxHistory>
+            <!-- Total size of all archived logs will be at most 1GB -->
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- Root Logger Configuration -->
+    <!-- This defines the default logging level and which appenders to use -->
+    <root level="INFO"> <!-- Set to DEBUG for more verbose logging, especially during troubleshooting -->
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILE" />
+    </root>
+
+    <!-- Optional: Specific logger levels for certain packages -->
+    <!-- This can help reduce noise from third-party libraries -->
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.hibernate" level="WARN"/>
+    <logger name="org.apache.tomcat" level="WARN"/>
+    <logger name="org.apache.coyote" level="WARN"/>
+
+    <!-- Example: Set your application's specific package to DEBUG for detailed logging -->
+    <!-- Replace 'com.ctbcins.mos' with your actual base package -->
+    <!-- <logger name="com.ctbcins.mos" level="DEBUG"/> -->
+
+</configuration>

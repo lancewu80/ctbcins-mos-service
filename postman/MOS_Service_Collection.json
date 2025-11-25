@@ -1,0 +1,70 @@
+{
+  "info": {
+    "name": "MOS Service API Collection",
+    "description": "Multimedia Object Storage System API Testing",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080/mos-service",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/mos/health",
+          "host": ["{{base_url}}"],
+          "path": ["api", "mos", "health"]
+        }
+      }
+    },
+    {
+      "name": "Get Download URL",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"bucketName\": \"clm\",\n  \"filePath\": \"/CLM/多元理賠系統/WebRTC/BT012500B00145/download.pdf\",\n  \"eTagId\": \"9ecd47bd0aa8b7b8b2123e95fe575d3c\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/mos/v1/download/fileUrl",
+          "host": ["{{base_url}}"],
+          "path": ["api", "mos", "v1", "download", "fileUrl"]
+        }
+      }
+    },
+    {
+      "name": "Upload File",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"filePath\": \"/多元理賠/CAR-車險/WebRTC-視訊案件/RTC-20250715003/download.pdf\",\n  \"fileName\": \"download.pdf\",\n  \"scenarioId\": \"DANMC_BASIC\",\n  \"sourceSystemId\": \"CLM\",\n  \"sourceSystemName\": \"多元理賠\",\n  \"bucketName\": \"clm\",\n  \"createUserId\": \"clm-schedule\",\n  \"amendUserId\": \"clm-schedule\",\n  \"indexRel\": {\n    \"fName\": \"RTC-20250715003\",\n    \"registrationNo\": \"ABC-1234\"\n  },\n  \"customerInfo\": {\n    \"insuNationalityTag\": \"0\",\n    \"customerServiceAgent\": \"張永睿\",\n    \"accidentTime\": \"2025-07-15 17:00\",\n    \"vehicleType\": \"0汽車, 1機車\",\n    \"insuName\": \"朱依婷\",\n    \"insuIdCard\": \"A241193198\",\n    \"insuMobile\": \"0918730038\",\n    \"insuTel\": \"022342211\",\n    \"insuAddress\": \"宜蘭縣宜蘭市黎明里黎明三路32巷5弄12號\",\n    \"insuEmail\": \"Eating@gmail.com\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/mos/v2/upload/file",
+          "host": ["{{base_url}}"],
+          "path": ["api", "mos", "v2", "upload", "file"]
+        }
+      }
+    }
+  ]
+}

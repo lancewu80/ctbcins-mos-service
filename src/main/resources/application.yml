@@ -1,0 +1,44 @@
+spring:
+  datasource:
+    url: jdbc:sqlserver://NB-B0014:1433;databaseName=ecp8502;encrypt=true;trustServerCertificate=true;
+    username: ecp  # 請替換為實際用戶名
+    password: csii1qaz@WSX  # 請替換為實際密碼
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+  jpa:
+    hibernate:
+      ddl-auto: validate  # 改為 validate，只驗證表結構
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.SQLServerDialect
+        format_sql: true
+        # 禁用自動引號，讓 Hibernate 使用原始表名
+        globally_quoted_identifiers: false
+        # 明確設定命名策略
+        naming-strategy: org.hibernate.cfg.EJB3NamingStrategy
+        # 禁用物理命名策略
+        physical_naming_strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+# 定時任務配置 - 每分鐘執行一次
+scheduler:
+  attachment:
+    enabled: true
+    cron: "0 * * * * *"  # 每分鐘執行一次
+    initial-delay: 10000  # 應用啟動後10秒開始執行
+
+server:
+  port: 8080
+  servlet:
+    context-path: /mos-service
+
+logging:
+  level:
+    com.ctbcins.mos: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+mos:
+  api:
+    base-url: https://uat-kong.ctbcins.com:8443
+    download-endpoint: /mos/api/v1/download/fileUrl
+    upload-endpoint: /mos/api/v2/upload/file
