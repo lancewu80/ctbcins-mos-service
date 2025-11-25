@@ -1,0 +1,74 @@
+name: Build and push Docker image
+
+# Build a Docker image from the project using the provided Dockerfile.dockerfile,
+# and push it to Docker Hub.
+# Triggers: push to master, or manual.
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: 'maven'
+
+      - name: Build with Maven (package)
+        run: mvn -B -DskipTests package
+
+      - name: Find packaged JAR
+        id: find_jar
+        run: |
+          echo "Looking for jar in target/"
+          JAR=$(ls target/*.jar | grep -v "original" | head -n 1)
+          if [ -z "$JAR" ]; then
+            echo "No jar found in target/" >&2
+            exit 1
+          fi
+          echo "Found jar: $JAR"
+          echo "jar=$JAR" >> $GITHUB_OUTPUT
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.dockerfile
+          push: true
+          tags: |
+            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:${{ github.sha }}
+            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:latest
+          build-args: |
+            JAR_FILE=${{ steps.find_jar.outputs.jar }}
+
+# Notes for maintainers:
+# - This workflow pushes to Docker Hub. You must add the following secrets in your
+#   GitHub repository: `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (a personal access token
+#   or your Docker Hub password). Go to Settings -> Secrets -> Actions to add them.
+# - The workflow dynamically finds the jar produced under target/ and passes it to the Docker
+#   build via build-arg JAR_FILE (which matches the ARG in your Dockerfile.dockerfile).
+# - To allow automated pulls from Docker Hub, ensure the Docker Hub repo (username/REPO)
+#   exists or is created automatically when you push (Docker Hub may create it on first push
+#   depending on your account settings). If pushing to an existing organization repo, adjust
+#   the tag to use that organization name instead of secrets.DOCKERHUB_USERNAME.
